@@ -1,7 +1,10 @@
+import { Button } from "@/components/ui/button"
 
 const Testpage = () => {
   return (
-    <div>Testpage</div>
+    <div>
+      <Button size={"xs"}>Default shadcn Button</Button>
+    </div>
   )
 }
 
