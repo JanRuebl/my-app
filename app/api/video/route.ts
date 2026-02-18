@@ -1,7 +1,12 @@
-import { getSortedWordFrequency, WordFrequency } from "@/lib/sortWords";
+import {
+  getSortedWordFrequency,
+  splitByGermanWordTypes,
+} from "@/lib/sortWords";
 import { ApiError, VideoApiResponse, VideoMetaData } from "@/lib/types/global";
 import { NextRequest, NextResponse } from "next/server";
 import { fetchTranscript } from "youtube-transcript-plus";
+
+// https://www.youtube.com/watch?v=Dw4WRYqk1_o
 
 export async function GET(
   request: NextRequest,
@@ -18,8 +23,16 @@ export async function GET(
     const transcript = await getTranscript(url);
     const metaData = await getVideoMetaData(url);
     const wordFrequency = getSortedWordFrequency(transcript);
+    const splitWordFrequency = splitByGermanWordTypes(wordFrequency);
 
-    return NextResponse.json({ transcript, metaData, wordFrequency });
+    console.log("meta", metaData);
+
+    return NextResponse.json({
+      transcript,
+      metaData,
+      wordFrequency,
+      splitWordFrequency,
+    });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Unknown error" },
@@ -35,12 +48,12 @@ const getTranscript = async (url: string) => {
   return transcript;
 };
 
-const getVideoMetaData = async (url: string) => {
+const getVideoMetaData = async (url: string): Promise<VideoMetaData> => {
   const oembedUrl = `https://www.youtube.com/oembed?url=${url}&format=json`;
   const metaResponse = await fetch(oembedUrl);
   if (!metaResponse.ok)
     throw new Error("Metadaten konnten nicht geladen werden");
-  const metaData = (await metaResponse.json()) as VideoMetaData;
+  const metaData = await metaResponse.json();
 
   return metaData;
 };

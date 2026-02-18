@@ -1,31 +1,45 @@
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableHeader,
   TableRow,
   TableHead,
   TableBody,
-  TableCaption,
   TableCell,
-  TableFooter,
 } from "@/components/ui/table";
-import { VideoApiResponse } from "@/lib/types/global";
+import { WordFrequency } from "@/lib/sortWords";
+import { useMemo, useState } from "react";
 
-const Ranking = (data: VideoApiResponse) => {
+const Ranking = ({ data }: { data: WordFrequency[] }) => {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Filter-Logik
+  const filteredWords = useMemo(() => {
+    return data.filter((item) =>
+      item.word.toLowerCase().includes(searchTerm.toLowerCase()),
+    );
+  }, [data, searchTerm]);
+
   return (
-    <>
-      <h2 className='text-2xl font-bold mb-4'>{data.metaData.title}</h2>
-      <p className='mb-2'>Autor: {data.metaData.author_name}</p>
-      <p className='mb-4'>Anzahl Wörter: {data.wordFrequency.length}</p>
+    <div>
+      <Input
+        placeholder='Wort filtern...'
+        value={searchTerm}
+        onChange={(e) => {
+          setSearchTerm(e.target.value);
+        }}
+        className='max-w-sm mb-3'
+      />
+
       <Table>
-        <TableCaption>A list of your recent invoices.</TableCaption>
         <TableHeader>
           <TableRow className='bg-orange-950 text-white'>
             <TableHead className='bold text-lg'>Wort</TableHead>
-            <TableHead>Anzahl</TableHead>
+            <TableHead className='bold text-lg'>Anzahl</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.wordFrequency.map((wordFreq) => (
+          {filteredWords.map((wordFreq) => (
             <TableRow key={wordFreq.word}>
               <TableCell>{wordFreq.word}</TableCell>
               <TableCell>{wordFreq.count}</TableCell>
@@ -33,7 +47,7 @@ const Ranking = (data: VideoApiResponse) => {
           ))}
         </TableBody>
       </Table>
-    </>
+    </div>
   );
 };
 export default Ranking;
